@@ -9,7 +9,8 @@ export default class App extends React.Component {
   constructor() {
     super()
     this.state = {
-      todos: []
+      todos: [],
+      error: ''
     }
   }
 
@@ -19,7 +20,7 @@ export default class App extends React.Component {
       this.setState({ ...this.state, todos: res.data.data })
     })
     .catch((err) => {
-      console.error(err)
+      this.setState({ ...this.state, error: err.response.data.message })
     })
   }
 
@@ -30,6 +31,7 @@ export default class App extends React.Component {
   render() {
     return (
       <>
+        <p>Error: {this.state.error}</p>
         {
           this.state.todos.map(todo => {
             return (<div key={todo.id}>{todo.name}</div>)
