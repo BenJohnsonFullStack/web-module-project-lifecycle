@@ -9,7 +9,8 @@ export default class App extends React.Component {
     this.state = {
       todos: [],
       error: '',
-      inputValue: ''
+      inputValue: '',
+      displayComplete: true
     }
   }
 
@@ -44,6 +45,26 @@ export default class App extends React.Component {
     })
   }
 
+  toggleCompleted = id => e => {
+    axios.patch(`${URL}/${id}`)
+      .then((res) => {
+        this.setState({ 
+            ...this.state, 
+            todos: this.state.todos
+              .map(todo => {
+                if(todo.id !== id) return todo
+                return res.data.data
+              }) })
+      })
+      .catch((err) => {
+        this.setState({ ...this.state, error: err.response.data.message })
+      })
+  }
+
+  toggleCompletedDisplay = () => {
+    this.setState({ ...this.state, displayComplete: !this.state.displayComplete })
+  }
+
   componentDidMount() {
     this.fetchTodos()
   }
@@ -54,12 +75,14 @@ export default class App extends React.Component {
         <div id="error">Error: {this.state.error}</div>
         <div id="todos">
           <h2>Todos:</h2>
-          {
-            this.state.todos.map(todo => {
-              return (
-                <div key={todo.id}>{todo.name}</div>
-              )
-            })
+          { 
+          this.state.todos.reduce((acc, todo) => {
+              if(this.state.displayComplete || !todo.completed)
+                return acc.concat(
+                  <div onClick={this.toggleCompleted(todo.id)} key={todo.id}>{todo.name} {todo.completed ? " -COMPLETE": ''}</div>
+                )
+              return acc
+            }, [])
           }
         </div>
         <form id="todoForm" onSubmit={this.onSubmit}>
@@ -70,8 +93,8 @@ export default class App extends React.Component {
           onChange={this.changeValues}
           />
           <input type="submit" />
-          <button>Clear</button>
         </form>
+        <button onClick={this.toggleCompletedDisplay}>{this.state.displayComplete ? "Hide" : "Show"} Completed</button>
       </div>
     )
   }
